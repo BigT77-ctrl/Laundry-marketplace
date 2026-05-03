@@ -1,0 +1,7 @@
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+rootProject.name = "LaundryCustomer"
+include ':app'
+include ':shared-core'
+project(':shared-core').projectDir = new File(rootProject.projectDir, '../shared-core')
