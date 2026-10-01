@@ -37,7 +37,9 @@ data class Shop(
     @SerializedName("name") val name: String,
     @SerializedName("address") val address: String,
     @SerializedName("rating") val rating: Float,
-    @SerializedName("services") val services: List<LaundryService> = emptyList()
+    @SerializedName("services") val services: List<LaundryService> = emptyList(),
+    @SerializedName("latitude") val latitude: Double? = null,
+    @SerializedName("longitude") val longitude: Double? = null
 )
 
 data class LaundryService(
