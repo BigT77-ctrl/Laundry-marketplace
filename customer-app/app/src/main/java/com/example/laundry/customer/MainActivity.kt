@@ -81,22 +81,7 @@ fun MainScreen(repository: LaundryRepository) {
 
 @Composable
 fun ShopBrowser(repository: LaundryRepository, onShopSelected: (Shop) -> Unit) {
-    var shops by remember { mutableStateOf(emptyList<Shop>()) }
-
-    LaunchedEffect(Unit) {
-        shops = repository.getShops()
-    }
-
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Browse Laundry Shops", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        LazyColumn {
-            items(shops) { shop ->
-                ShopItem(shop) { onShopSelected(shop) }
-            }
-        }
-    }
+    ShopMapScreen(repository, onShopSelected)
 }
 
 @Composable
