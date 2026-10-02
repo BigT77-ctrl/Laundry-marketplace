@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <style>
+      :root {
+        --bg: #edf4ff;
+        --bg-soft: #f7f9ff;
+        --sidebar: #0b1220;
+        --panel: rgba(255,255,255,0.8);
+        --panel-strong: #ffffff;
+        --muted: #5f6f8d;
+        --text: #111827;
+        --heading: #0f172a;
+        --accent: #2bb4a3;
+        --accent-2: #4f7cff;
+        --accent-3: #7b61ff;
+        --warning: #ffb648;
+        --danger: #f26a6a;
+        --border: rgba(15, 23, 42, 0.08);
+        --shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, #edf4ff 0%, #f8faff 100%);
+      }
+
+      .shell {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 260px;
+        background: linear-gradient(180deg, #0b1220 0%, #101b2d 100%);
+        color: #edf5ff;
+        border-right: 1px solid rgba(255,255,255,0.06);
+        padding: 28px 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 30px;
+        padding: 4px 8px 18px;
+      }
+
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #06131b;
+        font-weight: 900;
+      }
+
+      nav {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .nav-item {
+        text-decoration: none;
+        color: rgba(255,255,255,0.75);
+        border: 1px solid transparent;
+        background: rgba(255,255,255,0.02);
+        padding: 12px 14px;
+        border-radius: 12px;
+        display: block;
+        transition: all 0.2s ease;
+        font-weight: 600;
+      }
+
+      .nav-item:hover {
+        background: rgba(255,255,255,0.05);
+        border-color: rgba(255,255,255,0.04);
+      }
+
+      .nav-item.active {
+        background: linear-gradient(90deg, rgba(79,124,255,0.18), rgba(43,180,163,0.14));
+        border-color: rgba(127, 186, 255, 0.3);
+        color: #f5f9ff;
+      }
+
+      .content {
+        flex: 1;
+        padding: 32px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .system-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgba(43,180,163,0.2);
+        background: rgba(43,180,163,0.08);
+        color: #087f6d;
+        padding: 9px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #16b394;
+        box-shadow: 0 0 0 4px rgba(22,179,148,0.12);
+      }
+
+      .status-dot.offline { background: var(--danger); box-shadow: 0 0 0 4px rgba(242,106,106,0.12); }
+
+      .refresh-btn {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 11px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .refresh-btn:disabled { cursor: wait; opacity: 0.65; }
+
+      .last-updated {
+        margin: -10px 0 20px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .welcome {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .eyebrow {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      .title {
+        font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+        letter-spacing: -0.05em;
+        margin: 0;
+        color: var(--heading);
+      }
+
+      .chip {
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.6);
+        padding: 9px 14px;
+        border-radius: 999px;
+        color: var(--muted);
+        font-weight: 600;
+        box-shadow: 0 8px 18px rgba(15,23,42,0.03);
+      }
+
+      .logout {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 11px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 700;
+        box-shadow: 0 10px 24px rgba(15,23,42,0.04);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+
+      .stat-card,
+      .panel,
+      .table-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.76));
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .stat-card:hover,
+      .panel:hover,
+      .table-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 40px rgba(79, 124, 255, 0.08);
+      }
+
+      .stat-card {
+        padding: 20px 18px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      }
+
+      .stat-title {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      .stat-value {
+        font-size: clamp(1.8rem, 2vw, 2.5rem);
+        font-weight: 800;
+        margin-top: 12px;
+        letter-spacing: -0.05em;
+      }
+
+      .section-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+
+      .panel,
+      .table-card {
+        padding: 20px 18px;
+      }
+
+      .panel-header,
+      .table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .panel-header h3,
+      .table-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .mini-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .mini-row:last-child {
+        border-bottom: none;
+      }
+
+      .mini-row strong {
+        font-size: 0.96rem;
+      }
+
+      .muted { color: var(--muted); }
+
+      .status-badge {
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .approved { background: rgba(43,180,163,0.12); color: #0d9d86; }
+      .pending { background: rgba(255,182,72,0.14); color: #c78410; }
+      .rejected { background: rgba(242,106,106,0.12); color: #d64747; }
+      .active { background: rgba(79,124,255,0.12); color: #315de3; }
+      .processing { background: rgba(123,97,255,0.12); color: #674edb; }
+
+      .wallet-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .wallet-pill {
+        background: linear-gradient(135deg, rgba(79,124,255,0.10), rgba(43,180,163,0.10));
+        border: 1px solid rgba(79,124,255,0.12);
+        border-radius: 16px;
+        padding: 14px 16px;
+      }
+
+      .wallet-pill .label {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+      }
+
+      .wallet-pill .value {
+        margin-top: 8px;
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      canvas {
+        width: 100%;
+        height: 260px;
+        display: block;
+      }
+
+      @media (max-width: 900px) {
+        .shell { flex-direction: column; }
+        .sidebar { width: 100%; }
+        .section-grid { grid-template-columns: 1fr; }
+        .content { padding: 20px 16px 28px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand"><div class="brand-mark">L</div> Laundry Ops</div>
+        <nav>
+          <a class="nav-item active" href="/dashboard">Overview</a>
+          <a class="nav-item" href="/kyc">KYC</a>
+          <a class="nav-item" href="/orders">Orders</a>
+          <a class="nav-item" href="/wallets">Wallets</a>
+          <a class="nav-item" href="/vendors">Vendors</a>
+          <a class="nav-item" href="/drivers">Drivers</a>
+          <a class="nav-item" href="/payouts">Payouts</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="topbar">
+          <div class="welcome">
+            <span class="eyebrow">Dashboard</span>
+            <h1 class="title">Operations overview</h1>
+          </div>
+          <div class="topbar-actions">
+            <div class="system-status" id="systemStatus"><span class="status-dot"></span><span>Backend online</span></div>
+            <div class="chip" id="adminLabel">Admin</div>
+            <button class="refresh-btn" id="refreshBtn" type="button">Refresh</button>
+            <button class="logout" id="logoutBtn">Logout</button>
+          </div>
+        </div>
+
+        <div class="last-updated" id="lastUpdated">Loading live operations data…</div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="wallet-strip" id="walletStrip"></div>
+
+        <div class="section-grid">
+          <div class="panel">
+            <div class="panel-header"><h3>Recent orders</h3></div>
+            <div class="list" id="recentOrders"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><h3>KYC status</h3></div>
+            <canvas id="kycChart" height="260"></canvas>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header"><h3>Payout timeline</h3></div>
+          <canvas id="payoutChart" height="220"></canvas>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:4001';
+      const token = localStorage.getItem('laundry-admin-token');
+      if (!token) { window.location.href = '/login'; }
+
+      function formatMoney(cents) {
+        return new Intl.NumberFormat('en-NG', {
+          style: 'currency',
+          currency: 'NGN',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        }).format((cents || 0) / 100);
+      }
+
+      function formatCompactMoney(cents) {
+        const amount = (cents || 0) / 100;
+        return new Intl.NumberFormat('en-NG', {
+          style: 'currency',
+          currency: 'NGN',
+          notation: 'compact',
+          maximumFractionDigits: 1
+        }).format(amount);
+      }
+
+      function renderStats(data) {
+        const summary = data.summary || {};
+        const stats = [
+          { title: 'Total Users', value: summary.totalUsers ?? 0 },
+          { title: 'Active Orders', value: summary.activeOrders ?? 0 },
+          { title: 'Revenue', value: formatMoney(summary.revenueCents ?? 0) },
+          { title: 'Pending KYC', value: summary.pendingKyc ?? 0 },
+          { title: 'Vendors', value: summary.totalVendors ?? 0 },
+          { title: 'Drivers', value: summary.totalDrivers ?? 0 }
+        ];
+        document.getElementById('statsGrid').innerHTML = stats.map(stat => `
+          <div class="stat-card"><div class="stat-title">${stat.title}</div><div class="stat-value">${stat.value}</div></div>
+        `).join('');
+
+        const walletStrip = document.getElementById('walletStrip');
+        walletStrip.innerHTML = `
+          <div class="wallet-pill"><div class="label">Wallet inflow</div><div class="value">${formatCompactMoney(summary.revenueCents ?? 0)}</div></div>
+          <div class="wallet-pill"><div class="label">Payout queue</div><div class="value">${(data.payoutSummary?.pending ?? 0) + (data.payoutSummary?.processing ?? 0)}</div></div>
+          <div class="wallet-pill"><div class="label">Approval score</div><div class="value">${Math.max(0, Math.min(100, Math.round(((data.kycSummary?.approved ?? 0) / Math.max(1, (data.summary?.totalUsers ?? 1))) * 100))) }%</div></div>
+        `;
+      }
+
+      function renderRecentOrders(data) {
+        const list = data.recentOrders || [];
+        document.getElementById('recentOrders').innerHTML = list.map(order => `
+          <div class="mini-row">
+            <div>
+              <div><strong>#${order.id}</strong></div>
+              <div class="muted">${order.vendorName}</div>
+            </div>
+            <div style="text-align:right;">
+              <div>${formatMoney(order.totalCents)}</div>
+              <span class="status-badge ${order.status === 'delivered' ? 'approved' : 'pending'}">${order.status}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function drawBarChart(canvasId, labels, values, colors) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        const width = canvas.clientWidth || 420;
+        const height = 260;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, width, height);
+
+        const max = Math.max(...values, 1);
+        const chartWidth = width - 60;
+        const chartHeight = 170;
+        const left = 28;
+        const top = 20;
+
+        ctx.strokeStyle = 'rgba(15,23,42,0.08)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i <= 4; i++) {
+          const y = top + (chartHeight / 4) * i;
+          ctx.moveTo(left, y);
+          ctx.lineTo(left + chartWidth, y);
+        }
+        ctx.stroke();
+
+        const barWidth = Math.max(28, (chartWidth / values.length) - 18);
+        values.forEach((value, idx) => {
+          const barHeight = (value / max) * chartHeight;
+          const x = left + idx * (chartWidth / values.length) + 12;
+          const y = top + chartHeight - barHeight;
+          ctx.fillStyle = colors[idx % colors.length];
+          ctx.fillRect(x, y, barWidth, barHeight);
+          ctx.fillStyle = '#111827';
+          ctx.font = '12px sans-serif';
+          ctx.fillText(labels[idx], x, top + chartHeight + 20);
+          ctx.fillText(String(value), x, Math.max(10, y - 8));
+        });
+      }
+
+      function drawLineChart(canvasId, labels, values) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        const width = canvas.clientWidth || 420;
+        const height = 220;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const max = Math.max(...values, 1);
+        const chartWidth = width - 80;
+        const chartHeight = 140;
+        const left = 28;
+        const top = 20;
+
+        ctx.strokeStyle = 'rgba(15,23,42,0.08)';
+        for (let i = 0; i <= 4; i++) {
+          const y = top + (chartHeight / 4) * i;
+          ctx.beginPath();
+          ctx.moveTo(left, y);
+          ctx.lineTo(left + chartWidth, y);
+          ctx.stroke();
+        }
+
+        const points = values.map((value, idx) => {
+          const x = left + (idx / Math.max(values.length - 1, 1)) * chartWidth;
+          const y = top + chartHeight - (value / max) * chartHeight;
+          return { x, y };
+        });
+
+        ctx.beginPath();
+        points.forEach((point, idx) => {
+          if (idx === 0) ctx.moveTo(point.x, point.y);
+          else ctx.lineTo(point.x, point.y);
+        });
+        ctx.strokeStyle = '#4f7cff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        points.forEach((point, idx) => {
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+          ctx.fillStyle = '#2bb4a3';
+          ctx.fill();
+          ctx.fillStyle = '#111827';
+          ctx.font = '12px sans-serif';
+          ctx.fillText(labels[idx], point.x - 12, top + chartHeight + 24);
+        });
+      }
+
+      async function loadDashboard() {
+        const refreshBtn = document.getElementById('refreshBtn');
+        const status = document.getElementById('systemStatus');
+        refreshBtn.disabled = true;
+        try {
+          const res = await fetch(`${API_BASE}/api/admin/dashboard`, { headers: { Authorization: `Bearer ${token}` } });
+          if (res.status === 401) { window.location.href = '/login'; return; }
+          if (!res.ok) throw new Error('Dashboard request failed');
+          const data = await res.json();
+          renderStats(data);
+          renderRecentOrders(data);
+
+          const kyc = data.kycSummary || {};
+          drawBarChart('kycChart', ['Approved','Pending','Rejected'], [kyc.approved ?? 0, kyc.pending ?? 0, kyc.rejected ?? 0], ['#2bb4a3','#ffb648','#f26a6a']);
+
+          const payoutTrend = data.payoutTrend || [];
+          const labels = payoutTrend.map(item => item.month || '');
+          const values = payoutTrend.map(item => Number(item.total || 0) / 100);
+          drawLineChart('payoutChart', labels, values);
+          status.innerHTML = '<span class="status-dot"></span><span>Backend online</span>';
+          document.getElementById('lastUpdated').textContent = `Last updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        } catch (error) {
+          status.innerHTML = '<span class="status-dot offline"></span><span>Backend unavailable</span>';
+          document.getElementById('lastUpdated').textContent = 'Unable to load live operations data';
+        } finally {
+          refreshBtn.disabled = false;
+        }
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('laundry-admin-token');
+        window.location.href = '/login';
+      });
+
+      document.getElementById('adminLabel').textContent = 'Admin';
+      document.getElementById('refreshBtn').addEventListener('click', loadDashboard);
+      loadDashboard();
+    </script>
+  </body>
+</html>

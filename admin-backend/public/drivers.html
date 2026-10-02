@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Driver Operations</title>
+    <style>
+      :root {
+        --bg: #eef5ff;
+        --sidebar: #0b1220;
+        --panel: rgba(255,255,255,0.82);
+        --muted: #5f6f8d;
+        --text: #111827;
+        --heading: #0f172a;
+        --accent: #2bb4a3;
+        --accent-2: #4f7cff;
+        --warning: #ffb648;
+        --danger: #f26a6a;
+        --border: rgba(15, 23, 42, 0.08);
+        --shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", sans-serif;
+        color: var(--text);
+        background: linear-gradient(180deg, #edf4ff 0%, #f8faff 100%);
+      }
+      .shell { display: flex; min-height: 100vh; }
+      .sidebar {
+        width: 260px; background: linear-gradient(180deg, #0b1220 0%, #101b2d 100%); color: #edf5ff; border-right: 1px solid rgba(255,255,255,0.06); padding: 28px 18px;
+      }
+      .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 30px; padding: 4px 8px 18px; }
+      .brand-mark { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #06131b; font-weight: 900; }
+      nav { display: flex; flex-direction: column; gap: 10px; }
+      .nav-item {
+        text-decoration: none; color: rgba(255,255,255,0.75); border: 1px solid transparent; background: rgba(255,255,255,0.02); padding: 12px 14px; border-radius: 12px; display: block; transition: all 0.2s ease; font-weight: 600;
+      }
+      .nav-item.active { background: linear-gradient(90deg, rgba(79,124,255,0.18), rgba(43,180,163,0.14)); border-color: rgba(127, 186, 255, 0.3); color: #f5f9ff; }
+      .content { flex: 1; padding: 32px; }
+      .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+      .topbar-actions { display: flex; align-items: center; gap: 12px; }
+      .eyebrow { color: var(--muted); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+      .title { font-size: clamp(1.8rem, 2.5vw, 2.5rem); letter-spacing: -0.05em; margin: 0; color: var(--heading); }
+      .chip { border: 1px solid var(--border); background: rgba(255,255,255,0.6); padding: 9px 14px; border-radius: 999px; color: var(--muted); font-weight: 600; }
+      .logout { background: #ffffff; border: 1px solid var(--border); color: var(--text); padding: 11px 16px; border-radius: 12px; cursor: pointer; font-weight: 700; box-shadow: 0 10px 24px rgba(15,23,42,0.04); }
+      .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 18px; margin-bottom: 20px; }
+      .stat-card, .panel, .table-card { background: var(--panel); border: 1px solid var(--border); border-radius: 22px; box-shadow: var(--shadow); }
+      .stat-card { padding: 18px; }
+      .stat-title { color: var(--muted); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+      .stat-value { font-size: clamp(1.7rem, 2vw, 2.3rem); font-weight: 800; margin-top: 10px; letter-spacing: -0.05em; }
+      .section-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 18px; }
+      .panel, .table-card { padding: 20px 18px; }
+      .panel-header, .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+      .panel-header h3, .table-header h3 { margin: 0; font-size: 1.1rem; }
+      .list { display: flex; flex-direction: column; gap: 10px; }
+      .mini-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+      .mini-row:last-child { border-bottom: none; }
+      .muted { color: var(--muted); }
+      .status-badge { border-radius: 999px; padding: 6px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; display: inline-block; }
+      .approved { background: rgba(43,180,163,0.12); color: #0d9d86; }
+      .pending { background: rgba(255,182,72,0.14); color: #c78410; }
+      .rejected { background: rgba(242,106,106,0.12); color: #d64747; }
+      .active { background: rgba(79,124,255,0.12); color: #315de3; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--border); }
+      th { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; }
+      tbody tr:hover { background: rgba(79,124,255,0.02); }
+      .status-select, .wallet-action {
+        border: 1px solid var(--border);
+        background: #f8fbff;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font: inherit;
+        color: var(--heading);
+      }
+      .mini-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      @media (max-width: 900px) { .shell { flex-direction: column; } .sidebar { width: 100%; } .content { padding: 20px 16px 28px; } .section-grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand"><div class="brand-mark">L</div> Laundry Ops</div>
+        <nav>
+          <a class="nav-item" href="/dashboard">Overview</a>
+          <a class="nav-item" href="/kyc">KYC</a>
+          <a class="nav-item" href="/orders">Orders</a>
+          <a class="nav-item" href="/wallets">Wallets</a>
+          <a class="nav-item" href="/vendors">Vendors</a>
+          <a class="nav-item active" href="/drivers">Drivers</a>
+          <a class="nav-item" href="/payouts">Payouts</a>
+        </nav>
+      </aside>
+      <main class="content">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Operations</div>
+            <h1 class="title">Driver operations</h1>
+          </div>
+          <div class="topbar-actions">
+            <div class="chip" id="adminLabel">Admin</div>
+            <button class="logout" id="logoutBtn">Logout</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="section-grid">
+          <div class="panel">
+            <div class="panel-header"><h3>Dispatch activity</h3></div>
+            <div class="list" id="dispatchActivity"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h3>Route status</h3></div>
+            <div class="list" id="routeStatus"></div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header"><h3>Drivers</h3></div>
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Status</th><th>KYC</th><th>Today</th><th>Action</th><th>Updated</th></tr>
+            </thead>
+            <tbody id="driverBody"></tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:4001';
+      const token = localStorage.getItem('laundry-admin-token');
+      if (!token) window.location.href = '/login';
+
+      function formatMoney(cents) { return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format((cents || 0) / 100); }
+      function formatDate(value) { return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+
+      function renderStats(drivers, orders) {
+        const active = drivers.filter(d => d.status === 'active').length;
+        const onRoute = drivers.filter(d => d.status === 'on_route').length;
+        const kycPending = drivers.filter(d => d.kycStatus === 'pending').length;
+        const todayTripValue = orders.filter(o => o.driverName).reduce((sum, order) => sum + Number(order.totalCents || 0), 0);
+
+        const stats = [
+          { title: 'Active drivers', value: active },
+          { title: 'On route', value: onRoute },
+          { title: 'KYC pending', value: kycPending },
+          { title: 'Trip value', value: formatMoney(todayTripValue) }
+        ];
+
+        document.getElementById('statsGrid').innerHTML = stats.map(stat => `
+          <div class="stat-card">
+            <div class="stat-title">${stat.title}</div>
+            <div class="stat-value">${stat.value}</div>
+          </div>
+        `).join('');
+      }
+
+      function renderDispatch(drivers, orders) {
+        const list = drivers.slice(0, 4).map(driver => {
+          const activeOrders = orders.filter(order => order.driverName === driver.name).length;
+          return `
+            <div class="mini-row">
+              <div>
+                <strong>${driver.name}</strong>
+                <div class="muted">${driver.email}</div>
+              </div>
+              <div style="text-align:right;">
+                <div>${activeOrders} orders</div>
+                <span class="status-badge ${driver.status === 'active' ? 'active' : driver.status === 'on_route' ? 'approved' : 'pending'}">${driver.status}</span>
+              </div>
+            </div>
+          `;
+        });
+        document.getElementById('dispatchActivity').innerHTML = list.join('');
+
+        const routeSummary = [
+          { label: 'Assigned', value: drivers.filter(d => d.status === 'assigned').length },
+          { label: 'On route', value: drivers.filter(d => d.status === 'on_route').length },
+          { label: 'Available', value: drivers.filter(d => d.status === 'active').length }
+        ];
+
+        document.getElementById('routeStatus').innerHTML = routeSummary.map(item => `
+          <div class="mini-row">
+            <div><strong>${item.label}</strong></div>
+            <span class="status-badge ${item.label === 'On route' ? 'approved' : 'active'}">${item.value}</span>
+          </div>
+        `).join('');
+      }
+
+      function renderDrivers(drivers) {
+        document.getElementById('driverBody').innerHTML = drivers.map(driver => `
+          <tr>
+            <td>${driver.name}</td>
+            <td><span class="status-badge ${driver.status === 'on_route' ? 'approved' : driver.status === 'active' ? 'active' : 'pending'}">${driver.status}</span></td>
+            <td><span class="status-badge ${driver.kycStatus === 'approved' ? 'approved' : driver.kycStatus === 'rejected' ? 'rejected' : 'pending'}">${driver.kycStatus}</span></td>
+            <td>${formatMoney(driver.todayEarningsCents || 0)}</td>
+            <td>
+              <div class="mini-stack">
+                <select class="status-select" data-user-id="${driver.id}">
+                  <option value="active" ${driver.status === 'active' ? 'selected' : ''}>active</option>
+                  <option value="on_route" ${driver.status === 'on_route' ? 'selected' : ''}>on_route</option>
+                  <option value="inactive" ${driver.status === 'inactive' ? 'selected' : ''}>inactive</option>
+                </select>
+                <button class="small-btn update-user-status" data-id="${driver.id}">Save status</button>
+                <button class="wallet-action" data-id="${driver.id}" data-kind="topup">+250</button>
+                <button class="wallet-action" data-id="${driver.id}" data-kind="refund">-250</button>
+              </div>
+            </td>
+            <td>${formatDate(driver.updatedAt)}</td>
+          </tr>
+        `).join('');
+
+        document.querySelectorAll('.update-user-status').forEach(button => {
+          button.addEventListener('click', async () => {
+            const select = document.querySelector(`.status-select[data-user-id="${button.dataset.id}"]`);
+            await fetch(`${API_BASE}/api/admin/users/${button.dataset.id}/status`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ status: select.value })
+            });
+            loadPage();
+          });
+        });
+
+        document.querySelectorAll('.wallet-action').forEach(button => {
+          button.addEventListener('click', async () => {
+            const kind = button.dataset.kind;
+            await fetch(`${API_BASE}/api/admin/users/${button.dataset.id}/wallet`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ amountCents: 25000, type: kind, note: kind === 'topup' ? 'Driver wallet top-up' : 'Driver wallet refund' })
+            });
+            loadPage();
+          });
+        });
+      }
+
+      async function loadPage() {
+        const [driversRes, ordersRes] = await Promise.all([
+          fetch(`${API_BASE}/api/admin/users?role=driver`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_BASE}/api/admin/orders`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+
+        const drivers = await driversRes.json();
+        const orders = await ordersRes.json();
+        renderStats(drivers, orders);
+        renderDispatch(drivers, orders);
+        renderDrivers(drivers);
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('laundry-admin-token');
+        window.location.href = '/login';
+      });
+      document.getElementById('adminLabel').textContent = 'Admin';
+      loadPage();
+    </script>
+  </body>
+</html>
