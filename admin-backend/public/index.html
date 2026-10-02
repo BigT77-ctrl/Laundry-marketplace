@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laundry Admin</title>
+    <style>
+      :root {
+        --bg: #07111f;
+        --panel: #101d2f;
+        --panel-2: #162944;
+        --card: #0f1f31;
+        --muted: #98a8c2;
+        --text: #edf5ff;
+        --accent: #44d3a4;
+        --accent-2: #5ab0ff;
+        --warning: #ffb44d;
+        --danger: #ff6b6b;
+        --border: rgba(255, 255, 255, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", sans-serif;
+        background: linear-gradient(180deg, #07111f 0%, #0a1528 100%);
+        color: var(--text);
+      }
+
+      body {
+        min-height: 100vh;
+      }
+
+      .app-shell {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 28px 20px 40px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 20px;
+        border: 1px solid var(--border);
+        background: rgba(16, 29, 47, 0.9);
+        border-radius: 18px;
+        backdrop-filter: blur(12px);
+        margin-bottom: 22px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #031420;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chip {
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.02);
+        color: var(--muted);
+        border-radius: 999px;
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+
+      .logout-btn,
+      .primary-btn,
+      .secondary-btn,
+      .status-btn {
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+      }
+
+      .logout-btn:hover,
+      .primary-btn:hover,
+      .secondary-btn:hover,
+      .status-btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .logout-btn {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        padding: 10px 16px;
+      }
+
+      .login-screen {
+        min-height: 80vh;
+        display: grid;
+        place-items: center;
+      }
+
+      .login-panel {
+        width: min(420px, 92vw);
+        background: rgba(16, 29, 47, 0.9);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 28px;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+      }
+
+      .login-panel h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+
+      .login-panel p {
+        margin: 0 0 18px;
+        color: var(--muted);
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .field label {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .field input {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: rgba(255,255,255,0.02);
+        color: var(--text);
+        padding: 12px 14px;
+        font-size: 15px;
+      }
+
+      .primary-btn {
+        width: 100%;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #04111b;
+        font-weight: 800;
+      }
+
+      .dashboard {
+        display: none;
+      }
+
+      .dashboard.visible {
+        display: block;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+
+      .stat-card,
+      .panel,
+      .table-card {
+        background: rgba(15, 31, 49, 0.88);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+      }
+
+      .stat-card {
+        padding: 18px 18px 16px;
+      }
+
+      .stat-title {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .stat-value {
+        margin-top: 12px;
+        font-size: 32px;
+        font-weight: 800;
+      }
+
+      .section-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+
+      .panel,
+      .table-card {
+        padding: 18px;
+      }
+
+      .panel-header,
+      .table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .panel-header h3,
+      .table-header h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .mini-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .mini-row:last-child {
+        border-bottom: none;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .status-badge {
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .approved { background: rgba(68, 211, 164, 0.16); color: #8df1c1; }
+      .pending { background: rgba(255, 180, 77, 0.16); color: #ffc86b; }
+      .rejected { background: rgba(255, 107, 107, 0.16); color: #ff9d9d; }
+      .active { background: rgba(90, 176, 255, 0.16); color: #8ec8ff; }
+      .processing { background: rgba(156, 132, 255, 0.16); color: #c8bcff; }
+
+      .table-card {
+        overflow: hidden;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 12px 8px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .secondary-btn,
+      .status-btn {
+        background: rgba(255,255,255,0.05);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 8px 12px;
+      }
+
+      .status-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .status-btn[data-status="approved"] { background: rgba(68,211,164,0.14); }
+      .status-btn[data-status="rejected"] { background: rgba(255,107,107,0.14); }
+      .status-btn[data-status="pending"] { background: rgba(255,180,77,0.14); }
+
+      .hidden { display: none !important; }
+
+      @media (max-width: 900px) {
+        .section-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <div id="loginScreen" class="login-screen">
+        <div class="login-panel">
+          <h1>Laundry Admin</h1>
+          <p>Operations dashboard for KYC, orders, and payouts</p>
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" type="text" value="admin" />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" value="admin123" />
+          </div>
+          <button class="primary-btn" id="loginBtn">Sign in</button>
+        </div>
+      </div>
+
+      <div id="dashboard" class="dashboard">
+        <div class="topbar">
+          <div class="brand">
+            <div class="brand-mark">L</div>
+            <span>LAUNDRY OPS</span>
+          </div>
+          <div class="header-actions">
+            <span id="adminLabel" class="chip">Admin</span>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="section-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Recent orders</h3>
+            </div>
+            <div id="recentOrders" class="list"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>KYC overview</h3>
+            </div>
+            <div id="kycOverview" class="list"></div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <h3>KYC review queue</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Score</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="kycTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="table-card" style="margin-top: 22px;">
+          <div class="table-header">
+            <h3>Payout queue</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Due</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="payoutTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:4001';
+      const tokenKey = 'laundry-admin-token';
+
+      const state = {
+        token: localStorage.getItem(tokenKey) || '',
+        dashboard: null,
+        kycQueue: [],
+        payouts: []
+      };
+
+      const ui = {
+        loginScreen: document.getElementById('loginScreen'),
+        dashboard: document.getElementById('dashboard'),
+        statsGrid: document.getElementById('statsGrid'),
+        recentOrders: document.getElementById('recentOrders'),
+        kycOverview: document.getElementById('kycOverview'),
+        kycTableBody: document.getElementById('kycTableBody'),
+        payoutTableBody: document.getElementById('payoutTableBody'),
+        adminLabel: document.getElementById('adminLabel'),
+        username: document.getElementById('username'),
+        password: document.getElementById('password'),
+        loginBtn: document.getElementById('loginBtn'),
+        logoutBtn: document.getElementById('logoutBtn')
+      };
+
+      function formatMoney(cents) {
+        return new Intl.NumberFormat('en-NG', {
+          style: 'currency',
+          currency: 'NGN',
+          maximumFractionDigits: 0
+        }).format((cents || 0) / 100);
+      }
+
+      function formatDate(dateString) {
+        if (!dateString) return '—';
+        return new Date(dateString).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+
+      function statusClass(status) {
+        return (status || 'pending').toLowerCase();
+      }
+
+      function renderStats(data) {
+        const summary = data?.summary || {};
+        const stats = [
+          { title: 'Total Users', value: summary.totalUsers ?? 0 },
+          { title: 'Active Orders', value: summary.activeOrders ?? 0 },
+          { title: 'Revenue', value: formatMoney(summary.revenueCents ?? 0) },
+          { title: 'Pending KYC', value: summary.pendingKyc ?? 0 },
+          { title: 'Vendors', value: summary.totalVendors ?? 0 },
+          { title: 'Drivers', value: summary.totalDrivers ?? 0 }
+        ];
+
+        ui.statsGrid.innerHTML = stats.map((stat) => `
+          <div class="stat-card">
+            <div class="stat-title">${stat.title}</div>
+            <div class="stat-value">${stat.value}</div>
+          </div>
+        `).join('');
+      }
+
+      function renderRecentOrders(data) {
+        const recent = data?.recentOrders || [];
+        ui.recentOrders.innerHTML = recent.map(order => `
+          <div class="mini-row">
+            <div>
+              <div><strong>#${order.id}</strong></div>
+              <div class="muted">${order.vendorName}</div>
+            </div>
+            <div style="text-align:right;">
+              <div>${formatMoney(order.totalCents)}</div>
+              <span class="status-badge ${statusClass(order.status)}">${(order.status || 'queued').replace('_', ' ')}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderKycOverview(data) {
+        const kycSummary = data?.kycSummary || {};
+        const items = [
+          { label: 'Approved', value: kycSummary.approved ?? 0, className: 'approved' },
+          { label: 'Pending', value: kycSummary.pending ?? 0, className: 'pending' },
+          { label: 'Rejected', value: kycSummary.rejected ?? 0, className: 'rejected' }
+        ];
+
+        ui.kycOverview.innerHTML = items.map(item => `
+          <div class="mini-row">
+            <span class="muted">${item.label}</span>
+            <span class="status-badge ${item.className}">${item.value}</span>
+          </div>
+        `).join('');
+      }
+
+      async function loadDashboard() {
+        const res = await fetch(`${API_BASE}/api/admin/dashboard`, {
+          headers: { Authorization: `Bearer ${state.token}` }
+        });
+
+        if (!res.ok) {
+          logout();
+          return;
+        }
+
+        state.dashboard = await res.json();
+        renderStats(state.dashboard);
+        renderRecentOrders(state.dashboard);
+        renderKycOverview(state.dashboard);
+
+        const kycRes = await fetch(`${API_BASE}/api/admin/kyc`, {
+          headers: { Authorization: `Bearer ${state.token}` }
+        });
+        state.kycQueue = await kycRes.json();
+
+        const payoutRes = await fetch(`${API_BASE}/api/admin/payouts`, {
+          headers: { Authorization: `Bearer ${state.token}` }
+        });
+        state.payouts = await payoutRes.json();
+        renderKycQueue();
+        renderPayouts();
+      }
+
+      function renderKycQueue() {
+        ui.kycTableBody.innerHTML = state.kycQueue.map(item => `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.role}</td>
+            <td><span class="status-badge ${statusClass(item.kycStatus)}">${item.kycStatus}</span></td>
+            <td>${item.kycScore}</td>
+            <td>${formatDate(item.createdAt)}</td>
+            <td>
+              <div class="status-actions">
+                <button class="status-btn" data-user-id="${item.id}" data-status="approved">Approve</button>
+                <button class="status-btn" data-user-id="${item.id}" data-status="rejected">Reject</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+
+        ui.kycTableBody.querySelectorAll('.status-btn').forEach(button => {
+          button.addEventListener('click', async () => {
+            const userId = button.dataset.userId;
+            const status = button.dataset.status;
+            await updateKyc(userId, status);
+          });
+        });
+      }
+
+      function renderPayouts() {
+        ui.payoutTableBody.innerHTML = state.payouts.map(item => `
+          <tr>
+            <td>${item.vendorName}</td>
+            <td>${formatMoney(item.amountCents)}</td>
+            <td><span class="status-badge ${statusClass(item.status)}">${item.status}</span></td>
+            <td>${formatDate(item.dueDate)}</td>
+            <td>
+              <div class="status-actions">
+                <button class="status-btn" data-payout-id="${item.id}" data-status="paid">Mark paid</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+
+        ui.payoutTableBody.querySelectorAll('.status-btn').forEach(button => {
+          button.addEventListener('click', async () => {
+            const payoutId = button.dataset.payoutId;
+            const status = button.dataset.status;
+            await updatePayout(payoutId, status);
+          });
+        });
+      }
+
+      async function updateKyc(userId, status) {
+        const res = await fetch(`${API_BASE}/api/admin/kyc/${userId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${state.token}`
+          },
+          body: JSON.stringify({ status, notes: `${status} via admin dashboard` })
+        });
+
+        if (res.ok) {
+          loadDashboard();
+        }
+      }
+
+      async function updatePayout(payoutId, status) {
+        const res = await fetch(`${API_BASE}/api/admin/payouts/${payoutId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${state.token}`
+          },
+          body: JSON.stringify({ status })
+        });
+
+        if (res.ok) {
+          loadDashboard();
+        }
+      }
+
+      async function login() {
+        const username = ui.username.value.trim();
+        const password = ui.password.value.trim();
+
+        const res = await fetch(`${API_BASE}/api/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error || 'Login failed');
+          return;
+        }
+
+        state.token = data.token;
+        localStorage.setItem(tokenKey, data.token);
+        ui.adminLabel.textContent = data.admin?.name || 'Admin';
+        ui.loginScreen.classList.add('hidden');
+        ui.dashboard.classList.add('visible');
+        loadDashboard();
+      }
+
+      function logout() {
+        state.token = '';
+        localStorage.removeItem(tokenKey);
+        ui.dashboard.classList.remove('visible');
+        ui.loginScreen.classList.remove('hidden');
+      }
+
+      ui.loginBtn.addEventListener('click', login);
+      ui.logoutBtn.addEventListener('click', logout);
+
+      if (state.token) {
+        ui.loginScreen.classList.add('hidden');
+        ui.dashboard.classList.add('visible');
+        ui.adminLabel.textContent = 'Admin';
+        loadDashboard();
+      }
+    </script>
+  </body>
+</html>
